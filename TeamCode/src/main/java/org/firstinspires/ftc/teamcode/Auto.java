@@ -1,81 +1,97 @@
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.hardware.camera.WebcamName;
+import org.opencv.core.Mat;
 import org.openftc.easyopencv.OpenCvCamera;
 import org.openftc.easyopencv.OpenCvCameraFactory;
 import org.openftc.easyopencv.OpenCvCameraRotation;
 import org.openftc.easyopencv.OpenCvWebcam;
+import org.opencv.imgcodecs.Imgcodecs;
 
 
+@TeleOp(name="Autonomous", group="Pushbot")
 public class Auto extends LinearOpMode {
 
-    private String kaisa = "C:\\Users\\Administrator\\source\\repos\\OpenCV_Course\\OpenCV_Course\\Resources\\kaisa.jfif";
-    private String victor = "C:\\Users\\Student Services\\Downloads\\viktor.jpg";
-    private String vladimir = "C:\\Users\\Student Services\\Downloads\\vladimir.jpg";
 
-    private Mechanum mechanumDrive = new Mechanum();
-    private VisionPipeline visionPipeline = new VisionPipeline(kaisa, victor, vladimir);
-    private robotDeclarations robot = new robotDeclarations();
 
-    OpenCvCamera camera;
+    //private Mechanum mechanumDrive = new Mechanum();
+    VisionPipeline visionPipeline = new VisionPipeline();
+    robotDeclarations robot = new robotDeclarations();
+
+    OpenCvWebcam webcam;
     WebcamName webcamName;
+
 
     @Override
     public void runOpMode() {
+        telemetry.addData("Status:", "Initilized");
+        initObjects();
 
-        webcamName = this.hardwareMap.get(WebcamName.class, "Webcam 1");
-        int cameraMonitorViewId = this.hardwareMap.appContext.getResources().getIdentifier(
-                "cameraMonitorViewID", "id", this.hardwareMap.appContext.getPackageName());
 
-        camera = OpenCvCameraFactory.getInstance().createWebcam(webcamName, cameraMonitorViewId);
-        camera.setPipeline(visionPipeline);
 
-        camera.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
+        OpenCvWebcam webcam = OpenCvCameraFactory.getInstance().createWebcam(robot.hwMap.get(WebcamName.class,
+                "Webcam 1"));
+
+        webcam.setPipeline(visionPipeline);
+        webcam.openCameraDeviceAsync(new OpenCvCamera.AsyncCameraOpenListener() {
             @Override
             public void onOpened() {
-                camera.startStreaming(1280, 720, OpenCvCameraRotation.UPRIGHT);
+                webcam.startStreaming(1280, 720, OpenCvCameraRotation.UPRIGHT);
+                telemetry.addData("Streaming Status: ", "Streaming");
+                telemetry.update();
             }
 
             @Override
             public void onError(int errorCode) {
-
+                telemetry.addData("Streaming Status: ", "ERR, COULD NOT STREAM");
+                telemetry.update();
             }
         });
+
+
+        telemetry.addLine("Waiting for start");
+        telemetry.update();
 
         waitForStart();
 
         while (opModeIsActive()) {
-            if (visionPipeline.getImg() == 0) {
-                telemetry.addData("Image Shown", "KAISA");
-            }
-            else if (visionPipeline.getImg() == 1) {
-                telemetry.addData("Image Shown", "VICTORR");
-            }
-            else if (visionPipeline.getImg() == 2) {
-                telemetry.addData("Image Shown", "VLATAMIDRRR");
+            switch(visionPipeline.getImg()) {
+                case PANTHEON:
+                    telemetry.addData("Curr_img", "Kiasa");
+                    break;
+                case LOGO:
+                    telemetry.addData("Curr_img", "Viktor");
+                    break;
+                case LIGHTNING:
+                    telemetry.addData("Curr_img", "Vladimir");
+                    break;
+                case NONE_DETECTED:
+                    telemetry.addData("Curr_img", "NONE DETECTED");
+
             }
 
+            telemetry.addData("Size", visionPipeline.good_matches.size());
+            telemetry.addData("Size", visionPipeline.good_matches2.size());
+            telemetry.addData("Size", visionPipeline.good_matches3.size());
+            telemetry.update();
         }
 
         //for testing
-        mechanumDrive.strafe(this, 1, 1, 2, 'v');
+        //mechanumDrive.strafe(this, 1, 1, 2, 'v');
 
     }
 
     public void initObjects() {
-        mechanumDrive.init(this);
+        //mechanumDrive.init(this);
         robot.init(this.hardwareMap);
     }
 
     public void shutdownObjects() {
-        mechanumDrive.shutdown(this);
+        //mechanumDrive.shutdown(this);
         // Vision.shutdown(this);
     }
 

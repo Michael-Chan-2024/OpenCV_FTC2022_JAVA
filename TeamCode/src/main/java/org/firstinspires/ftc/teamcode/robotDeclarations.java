@@ -60,14 +60,14 @@ import org.openftc.easyopencv.OpenCvCamera;
 public class robotDeclarations
 {
     /* Public OpMode members. */
-    public DcMotor pivotMotor = null;
+    /*public DcMotor pivotMotor = null;
     public DcMotor frontLeftMotor = null;
     public DcMotor frontRightMotor = null;
     public DcMotor backLeftMotor = null;
     public DcMotor backRightMotor = null;
 
     public Servo leftClaw = null;
-    public Servo rightClaw = null;
+    public Servo rightClaw = null;*/
 
 
     //constant variables used for auto
@@ -93,39 +93,39 @@ public class robotDeclarations
         hwMap = ahwMap;
 
         // Define and Initialize Motors
-        pivotMotor = hwMap.get(DcMotor.class,  "pivot_motor");
+        /*pivotMotor = hwMap.get(DcMotor.class,  "pivot_motor");
         frontLeftMotor = hwMap.get(DcMotor.class, "front_left_motor");
         frontRightMotor = hwMap.get(DcMotor.class, "front_right_motor");
         backLeftMotor = hwMap.get(DcMotor.class, "back_left_motor");
         backRightMotor = hwMap.get(DcMotor.class, "back_right_motor");
 
         leftClaw = hwMap.get(Servo.class, "left_claw");
-        rightClaw = hwMap.get(Servo.class, "right_claw");
+        rightClaw = hwMap.get(Servo.class, "right_claw");*/
 
 
 
 
         // Set all motors to zero power
-        pivotMotor.setPower(0);
+        /*pivotMotor.setPower(0);
         frontLeftMotor.setPower(0);
         frontRightMotor.setPower(0);
         backLeftMotor.setPower((0));
         backRightMotor.setPower(0);
 
         leftClaw.setPosition(0);
-        rightClaw.setPosition(0);
+        rightClaw.setPosition(0);*/
 
         // Set all motors to run without encoders.
-        pivotMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        /*pivotMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontRightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         frontLeftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backRightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         backLeftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
+*/
         // Set the direction of the right motors to reverse
         // so that all motors spin in the same direction.
-        frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
-        backRightMotor.setDirection(DcMotor.Direction.REVERSE);
+        /*frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
+        backRightMotor.setDirection(DcMotor.Direction.REVERSE);*/
 
         //rightClaw.setDirection(Servo.Direction.REVERSE);
 
@@ -133,10 +133,10 @@ public class robotDeclarations
 
     //checks if the drive motors are active
     //returns true if all of the drive motors are moving, but returns false if they're not
-    public boolean checkBusy () {
+    /*public boolean checkBusy () {
         return frontRightMotor.isBusy() && frontLeftMotor.isBusy()
                 && backRightMotor.isBusy() && backLeftMotor.isBusy();
-    }
+    }*/
 
 
 }

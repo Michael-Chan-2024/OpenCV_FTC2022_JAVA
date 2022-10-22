@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode;
 
+import android.content.Context;
+import android.util.Log;
+
+import java.nio.file.Path;
 import java.util.*;
 
 // OPENCV IMPORTS
@@ -12,73 +16,94 @@ import org.openftc.easyopencv.OpenCvPipeline;
 
 public class VisionPipeline extends OpenCvPipeline {
 
-    private String imgPath, imgPath2, imgPath3;
-    public VisionPipeline(String trainImgPath, String trainImgPath2, String trainImgPath3) {
-        imgPath = trainImgPath;
-        imgPath2 = trainImgPath2;
-        imgPath3 = trainImgPath3;
-    }
+
+    public final String pantheon = "/data/data/com.qualcomm.ftcrobotcontroller/Images/ftc1v2.5.png";
+        public final String logo = "/data/data/com.qualcomm.ftcrobotcontroller/Images/ftc2.png";
+    public final String lightning = "/data/data/com.qualcomm.ftcrobotcontroller/Images/ftc3.png";
+
 
     //object creation
     private final ORB orb = ORB.create(1000);
-    private final robotDeclarations robot = new robotDeclarations();
 
     private final float threshold = 0.75f;
-    private int imgNumber = 0;
 
     //Mat creation
     private MatOfKeyPoint kpQuery = new MatOfKeyPoint();
     private MatOfKeyPoint kpTrain = new MatOfKeyPoint();
-    private Mat imgTrain = Imgcodecs.imread(imgPath, Imgcodecs.IMREAD_GRAYSCALE);
-    private Mat imgTrain2 = Imgcodecs.imread(imgPath2, Imgcodecs.IMREAD_GRAYSCALE);
-    private Mat imgTrain3 = Imgcodecs.imread(imgPath3, Imgcodecs.IMREAD_GRAYSCALE);
+    public  Mat imgTrain = Imgcodecs.imread(pantheon, Imgcodecs.IMREAD_GRAYSCALE);
+    private Mat imgTrain2 = Imgcodecs.imread(logo, Imgcodecs.IMREAD_GRAYSCALE);
+    private Mat imgTrain3 = Imgcodecs.imread(lightning, Imgcodecs.IMREAD_GRAYSCALE);
     private Mat decsTrain = new Mat();
     private Mat decsQuery = new Mat();
-    private Mat mask = new Mat();
     private Mat imgGray = new Mat();
 
     //List creation
     private List<MatOfDMatch> knn_matches = new ArrayList<MatOfDMatch>();
-    private List<DMatch> good_matches = new ArrayList<DMatch>();
+    public List<DMatch> good_matches = new ArrayList<DMatch>();
+    public List<DMatch> good_matches2 = new ArrayList<DMatch>();
+    public List<DMatch> good_matches3 = new ArrayList<DMatch>();
 
-    @Override
-    public void init (Mat firstFrame) {
+    DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE);
 
+
+    enum IMG {
+        NONE_DETECTED,
+        PANTHEON,
+        LOGO,
+        LIGHTNING
     }
 
-    @Override
-    public Mat processFrame(Mat inputImg) {
-        try {
-            if (calcMatches(inputImg, imgTrain, orb) > 25) {
-                imgNumber = 0;
-            }
-            else if (calcMatches(inputImg, imgTrain2, orb) > 25) {
-                imgNumber = 1;
-            }
-            else if (calcMatches(inputImg, imgTrain3, orb) > 25) {
-                imgNumber = 2;
-            }
-        }
-        catch (Exception e) {
+    private IMG curr_img = IMG.NONE_DETECTED;
+    private int frame_counter = 0;
+    private int counter = 0;
 
+    @Override
+    public void init(Mat firstFrame) {
+
+    }
+    @Override
+    public Mat processFrame(Mat input) {
+        frame_counter++;
+        Imgproc.cvtColor(input, imgGray, Imgproc.COLOR_RGBA2GRAY);
+        if (frame_counter % 15 == 0) {
+            if (calcMatches(imgGray, this.imgTrain, this.orb, this.matcher, this.decsQuery,
+                    this.decsTrain, this.kpQuery, this.kpTrain,
+                    this.knn_matches, this.good_matches) >= 15) {
+
+                curr_img = IMG.PANTHEON;
+
+            } else if (calcMatches(imgGray, this.imgTrain2, this.orb, this.matcher, this.decsQuery,
+                    this.decsTrain, this.kpQuery, this.kpTrain,
+                    this.knn_matches, this.good_matches2) >= 15) {
+
+                curr_img = IMG.LOGO;
+
+            } else if (calcMatches(imgGray, this.imgTrain3, this.orb, this.matcher, this.decsQuery,
+                    this.decsTrain, this.kpQuery, this.kpTrain,
+                    this.knn_matches, this.good_matches3) >= 15) {
+
+                curr_img = IMG.LIGHTNING;
+
+            } else {
+                curr_img = IMG.NONE_DETECTED;
+            }
         }
-        return inputImg;
+        return imgGray;
     }
 
-    private int calcMatches (Mat img, Mat imgTrain, ORB orb) {
+    private int calcMatches (Mat inputImgQuery, Mat inputImgTrain, ORB func_orb, DescriptorMatcher decsMatcher, Mat decsQuery, Mat decsTrain,
+                             MatOfKeyPoint kpQuery, MatOfKeyPoint kpTrain, List<MatOfDMatch> knn_matches, List<DMatch> good_matches) {
 
-        DescriptorMatcher matcher = DescriptorMatcher.create(DescriptorMatcher.BRUTEFORCE);
-        Imgproc.cvtColor(img, imgGray, Imgproc.COLOR_RGBA2GRAY);
+        good_matches.clear();
 
-        orb.detectAndCompute(imgTrain, mask, kpTrain, decsTrain);
-        orb.detectAndCompute(imgGray, mask, kpQuery, decsQuery);
-
-        matcher.knnMatch(decsQuery, decsTrain, knn_matches, 2);
+        func_orb.detectAndCompute(inputImgTrain, new Mat(), kpTrain, decsTrain);
+        func_orb.detectAndCompute(inputImgQuery, new Mat(), kpQuery, decsQuery);
+        decsMatcher.knnMatch(decsQuery, decsTrain, knn_matches, 2);
 
         for (int i = 0; i < knn_matches.size(); i++) {
             List<DMatch> mylist = knn_matches.get(i).toList();
 
-            if (mylist.get(0).distance < threshold * mylist.get(1).distance) {
+            if (mylist.get(0).distance < this.threshold * mylist.get(1).distance) {
                 good_matches.add(mylist.get(0));
             }
         }
@@ -87,8 +112,8 @@ public class VisionPipeline extends OpenCvPipeline {
 
     }
 
-    public int getImg() {
-        return imgNumber;
+    public IMG getImg() {
+        return this.curr_img;
     }
 
 }
